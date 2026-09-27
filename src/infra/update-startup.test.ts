@@ -2686,7 +2686,10 @@ describe("update-startup", () => {
 
   it("refreshes the remote catalog every six hours and stops with gateway cleanup", async () => {
     const stop = scheduleGatewayUpdateCheck({
-      cfg: { update: { channel: "extended-stable", checkOnStart: false }, models: { catalogRefresh: { enabled: true } } },
+      cfg: {
+        update: { channel: "extended-stable", checkOnStart: false },
+        models: { catalogRefresh: { enabled: true } },
+      },
     });
 
     await vi.advanceTimersByTimeAsync(0);
@@ -2706,7 +2709,10 @@ describe("update-startup", () => {
       return finished.promise;
     });
     const stop = scheduleGatewayUpdateCheck({
-      cfg: { update: { channel: "extended-stable", checkOnStart: false } },
+      cfg: {
+        update: { channel: "extended-stable", checkOnStart: false },
+        models: { catalogRefresh: { enabled: true } },
+      },
     });
 
     let stopped = false;
@@ -2740,7 +2746,10 @@ describe("update-startup", () => {
       nextCheckInMs: 1_000,
     });
     const stop = scheduleGatewayUpdateCheck({
-      cfg: { update: { channel: "extended-stable", checkOnStart: false }, models: { catalogRefresh: { enabled: true } } },
+      cfg: {
+        update: { channel: "extended-stable", checkOnStart: false },
+        models: { catalogRefresh: { enabled: true } },
+      },
     });
 
     await vi.advanceTimersByTimeAsync(0);
