@@ -87,7 +87,7 @@ beforeEach(() => {
   vi.stubEnv("OPENCLAW_NO_AUTO_UPDATE", "");
   vi.stubEnv("OPENCLAW_NO_RESPAWN", "");
   vi.resetAllMocks();
-  mocks.config = {};
+  mocks.config = { update: { checkOnStart: true }, nodeHost: { autoUpdate: { enabled: true } } };
   mocks.configValid = true;
   mocks.readConfig.mockImplementation(async () => ({
     valid: mocks.configValid,
