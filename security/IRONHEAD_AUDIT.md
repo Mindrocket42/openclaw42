@@ -68,6 +68,21 @@ rule are now in the default AGENTS template. SOUL/IDENTITY carry persona and
 identity, while coordinator/reviewer roles become Underboss/Consigliere without
 changing their stable role ids.
 
+### IH-05 - Ambient discovery and update egress was default-on - REMEDIATED
+
+**Verified.** Upstream defaults performed a daily update request, refreshed the
+hosted model catalog, could advertise mDNS on macOS, scanned installed apps
+during guided setup, and enabled headless node auto-update unless disabled.
+
+**Risk.** These behaviors disclose machine/platform or local-inventory metadata
+or initiate outbound traffic without an Ironhead operator explicitly requesting
+that network/discovery behavior.
+
+**Change.** Automatic update checks, node auto-update, hosted model-catalog
+refresh, mDNS advertising, and installed-app recommendation scanning now require
+explicit opt-in. Provider/channel traffic explicitly configured by the operator
+is unchanged.
+
 ## Existing controls retained
 
 The following were inspected and retained rather than duplicated:
