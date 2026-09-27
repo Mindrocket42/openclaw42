@@ -499,11 +499,12 @@ describe("startGatewayDiscovery", () => {
       expect.objectContaining({ minimal: false, sshPort: 2222 }),
     );
     await discovery.update({ mdnsMode: undefined });
+    expect(service.service.advertise).toHaveBeenCalledTimes(3);
+    await discovery.update({ mdnsMode: "minimal" });
+    expect(service.service.advertise).toHaveBeenCalledTimes(4);
     expect(service.service.advertise).toHaveBeenLastCalledWith(
       expect.objectContaining({ minimal: true, cliPath: undefined, sshPort: undefined }),
     );
-    await discovery.update({ mdnsMode: "minimal" });
-    expect(service.service.advertise).toHaveBeenCalledTimes(4);
     await discovery.stop();
     await discovery.stop();
     expect(stop).toHaveBeenCalledTimes(4);
