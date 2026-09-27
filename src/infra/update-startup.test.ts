@@ -2651,7 +2651,7 @@ describe("update-startup", () => {
     const previousNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "production";
     const stop = scheduleGatewayUpdateCheck({
-      cfg: { update: { channel: "extended-stable" } },
+      cfg: { update: { channel: "extended-stable", checkOnStart: true } },
     });
 
     try {
@@ -2686,7 +2686,7 @@ describe("update-startup", () => {
 
   it("refreshes the remote catalog every six hours and stops with gateway cleanup", async () => {
     const stop = scheduleGatewayUpdateCheck({
-      cfg: { update: { channel: "extended-stable", checkOnStart: false } },
+      cfg: { update: { channel: "extended-stable", checkOnStart: false }, models: { catalogRefresh: { enabled: true } } },
     });
 
     await vi.advanceTimersByTimeAsync(0);
@@ -2740,7 +2740,7 @@ describe("update-startup", () => {
       nextCheckInMs: 1_000,
     });
     const stop = scheduleGatewayUpdateCheck({
-      cfg: { update: { channel: "extended-stable", checkOnStart: false } },
+      cfg: { update: { channel: "extended-stable", checkOnStart: false }, models: { catalogRefresh: { enabled: true } } },
     });
 
     await vi.advanceTimersByTimeAsync(0);
@@ -2758,7 +2758,7 @@ describe("update-startup", () => {
       const sourceUrl = "https://catalog.example.test/catalog.json";
       const cfg: OpenClawConfig = {
         update: { channel: "extended-stable", checkOnStart: false },
-        models: { catalogRefresh: { url: sourceUrl } },
+        models: { catalogRefresh: { enabled: true, url: sourceUrl } },
       };
       const bundle = (generatedAt: number, id: string) => ({
         schemaVersion: 1,
@@ -2822,7 +2822,7 @@ describe("update-startup", () => {
     const sourceUrl = "https://catalog.example.test/catalog.json";
     const cfg: OpenClawConfig = {
       update: { channel: "extended-stable", checkOnStart: false },
-      models: { catalogRefresh: { url: sourceUrl } },
+      models: { catalogRefresh: { enabled: true, url: sourceUrl } },
     };
     let stored: ReturnType<
       typeof import("../model-catalog/remote-store.js").readRemoteModelCatalog
@@ -2862,7 +2862,7 @@ describe("update-startup", () => {
       await vi.advanceTimersByTimeAsync(0);
       currentConfig = {
         ...cfg,
-        models: { catalogRefresh: { url: "https://mirror.example.test/catalog.json" } },
+        models: { catalogRefresh: { enabled: true, url: "https://mirror.example.test/catalog.json" } },
       };
       finished.resolve({
         status: "fresh",
@@ -2889,7 +2889,7 @@ describe("update-startup", () => {
     const sourceUrl = "https://catalog.example.test/catalog.json";
     const cfg: OpenClawConfig = {
       update: { channel: "extended-stable", checkOnStart: false },
-      models: { catalogRefresh: { url: sourceUrl } },
+      models: { catalogRefresh: { enabled: true, url: sourceUrl } },
     };
     let stored: ReturnType<
       typeof import("../model-catalog/remote-store.js").readRemoteModelCatalog
