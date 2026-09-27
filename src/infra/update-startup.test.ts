@@ -473,7 +473,7 @@ describe("update-startup", () => {
   function createBetaAutoUpdateConfig(params?: { checkOnStart?: boolean }) {
     return {
       update: {
-        ...(params?.checkOnStart === false ? { checkOnStart: false } : {}),
+        checkOnStart: params?.checkOnStart ?? true,
         channel: "beta" as const,
         auto: {
           enabled: true,
@@ -485,7 +485,7 @@ describe("update-startup", () => {
   function createExtendedStableConfig(params?: { checkOnStart?: boolean; autoEnabled?: boolean }) {
     return {
       update: {
-        ...(params?.checkOnStart === false ? { checkOnStart: false } : {}),
+        checkOnStart: params?.checkOnStart ?? true,
         channel: "extended-stable" as const,
         ...(params?.autoEnabled ? { auto: { enabled: true } } : {}),
       },
