@@ -1,4 +1,4 @@
-// Verifies CPU-derived and configured agent runtime limits.
+// Verifies bounded agent runtime limits.
 import os from "node:os";
 import { importFreshModule } from "openclaw/plugin-sdk/test-fixtures";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -13,13 +13,13 @@ describe("resolveAgentMaxConcurrent", () => {
   });
 
   it.each([
-    { availableParallelism: 1, expected: 8 },
-    { availableParallelism: 2, expected: 8 },
-    { availableParallelism: 8, expected: 32 },
-    { availableParallelism: 12, expected: 48 },
-    { availableParallelism: 48, expected: 192 },
+    { availableParallelism: 1, expected: 4 },
+    { availableParallelism: 2, expected: 4 },
+    { availableParallelism: 8, expected: 8 },
+    { availableParallelism: 12, expected: 8 },
+    { availableParallelism: 48, expected: 8 },
   ])(
-    "derives the default from $availableParallelism available CPUs",
+    "bounds the default for $availableParallelism available CPUs",
     async ({ availableParallelism, expected }) => {
       const availableParallelismSpy = vi
         .spyOn(os, "availableParallelism")
@@ -53,22 +53,25 @@ describe("resolveAgentMaxConcurrent", () => {
 
     try {
       const runtime = await importFreshAgentLimits("cpus-fallback");
-      expect(runtime.resolveAgentMaxConcurrent()).toBe(24);
+      expect(runtime.resolveAgentMaxConcurrent()).toBe(6);
       expect(cpusSpy).toHaveBeenCalledOnce();
     } finally {
       Object.defineProperty(os, "availableParallelism", availableParallelismDescriptor);
     }
   });
 
-  it.each([3, 256])(
-    "uses an explicit limit of %i without resolving the CPU default",
-    async (limit) => {
+  it.each([
+    { limit: 3, expected: 3 },
+    { limit: 256, expected: 16 },
+  ])(
+    "bounds an explicit limit of $limit to $expected without resolving the CPU default",
+    async ({ limit, expected }) => {
       const availableParallelismSpy = vi.spyOn(os, "availableParallelism").mockReturnValue(48);
-      const runtime = await importFreshAgentLimits("explicit-override");
+      const runtime = await importFreshAgentLimits(`explicit-override-${limit}`);
 
       expect(
         runtime.resolveAgentMaxConcurrent({ agents: { defaults: { maxConcurrent: limit } } }),
-      ).toBe(limit);
+      ).toBe(expected);
       expect(availableParallelismSpy).not.toHaveBeenCalled();
     },
   );
