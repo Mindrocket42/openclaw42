@@ -60,12 +60,12 @@ describe("remote model catalog refresh", () => {
     );
     const fetchImpl = vi.fn<typeof fetch>(async () => new Response(null, { status: 304 }));
     await expect(
-      refreshRemoteModelCatalog({ config: {}, fetchImpl, databaseOptions, now: () => 10_001 }),
+      refreshRemoteModelCatalog({ config: { models: { catalogRefresh: { enabled: true } } }, fetchImpl, databaseOptions, now: () => 10_001 }),
     ).resolves.toMatchObject({ status: "fresh" });
     expect(fetchImpl).not.toHaveBeenCalled();
     await expect(
       refreshRemoteModelCatalog({
-        config: {},
+        config: { models: { catalogRefresh: { enabled: true } } },
         fetchImpl,
         databaseOptions,
         force: true,
@@ -82,7 +82,7 @@ describe("remote model catalog refresh", () => {
     );
     await expect(
       refreshRemoteModelCatalog({
-        config: {},
+        config: { models: { catalogRefresh: { enabled: true } } },
         fetchImpl,
         databaseOptions,
         force: true,
@@ -113,7 +113,7 @@ describe("remote model catalog refresh", () => {
     await expect(
       refreshRemoteModelCatalog({
         config: {
-          models: { catalogRefresh: { url: "https://mirror.example.test/v1/catalog.json" } },
+          models: { catalogRefresh: { enabled: true, url: "https://mirror.example.test/v1/catalog.json" } },
         },
         fetchImpl,
         databaseOptions,
@@ -132,7 +132,7 @@ describe("remote model catalog refresh", () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => new Response(JSON.stringify(bundle)));
     await expect(
       refreshRemoteModelCatalog({
-        config: {},
+        config: { models: { catalogRefresh: { enabled: true } } },
         fetchImpl,
         databaseOptions: options(),
         force: true,
@@ -159,7 +159,7 @@ describe("remote model catalog refresh", () => {
     const rollbackFetch = vi.fn<typeof fetch>(async () => new Response(JSON.stringify(bundle)));
     await expect(
       refreshRemoteModelCatalog({
-        config: {},
+        config: { models: { catalogRefresh: { enabled: true } } },
         fetchImpl: rollbackFetch,
         databaseOptions,
         force: true,
@@ -173,7 +173,7 @@ describe("remote model catalog refresh", () => {
     await expect(
       refreshRemoteModelCatalog({
         config: {
-          models: { catalogRefresh: { url: "https://mirror.example.test/catalog.json" } },
+          models: { catalogRefresh: { enabled: true, url: "https://mirror.example.test/catalog.json" } },
         },
         fetchImpl: mirrorFetch,
         databaseOptions,
@@ -188,7 +188,7 @@ describe("remote model catalog refresh", () => {
     const invalid = vi.fn<typeof fetch>(async () => new Response("not json"));
     await expect(
       refreshRemoteModelCatalog({
-        config: {},
+        config: { models: { catalogRefresh: { enabled: true } } },
         fetchImpl: invalid,
         databaseOptions: options(),
         force: true,
@@ -200,7 +200,7 @@ describe("remote model catalog refresh", () => {
     );
     await expect(
       refreshRemoteModelCatalog({
-        config: {},
+        config: { models: { catalogRefresh: { enabled: true } } },
         fetchImpl: newer,
         databaseOptions: options(),
         force: true,
@@ -212,7 +212,7 @@ describe("remote model catalog refresh", () => {
     });
     await expect(
       refreshRemoteModelCatalog({
-        config: {},
+        config: { models: { catalogRefresh: { enabled: true } } },
         fetchImpl: timeout,
         databaseOptions: options(),
         force: true,
@@ -254,7 +254,7 @@ describe("remote model catalog refresh", () => {
       const fetchImpl = vi.fn<typeof fetch>(async () => new Response(corrupt, { status: 200 }));
       await expect(
         refreshRemoteModelCatalog({
-          config: {},
+          config: { models: { catalogRefresh: { enabled: true } } },
           fetchImpl,
           databaseOptions,
           force: true,

@@ -8,7 +8,7 @@ read_when:
   - Disabling all automatic update-check requests
 ---
 
-**Automatic update checks send a daily request by default.** It asks whether a
+**Ironhead does not send automatic update-check requests by default.** When `update.checkOnStart: true` is explicitly configured, the check sends at most one request per day. It asks whether a
 newer version exists and includes the OpenClaw version, operating system, Node.js
 version, CPU architecture, and request surface.
 Anonymous feature statistics are opt-in.
@@ -52,7 +52,7 @@ location information.
 
 ## Daily update check
 
-The default request is:
+When automatic update checks are explicitly enabled, the request is:
 
 ```http
 GET https://telemetry.openclaw.ai/api/latest-version
@@ -207,7 +207,7 @@ You can also configure the same preference directly:
 ```
 
 Set `DO_NOT_TRACK=1` or `DO_NOT_TRACK=true` to force anonymous feature statistics off,
-even when `telemetry.enabled` is `true`. `DO_NOT_TRACK` does not disable the
+even when `telemetry.enabled` is `true`. `DO_NOT_TRACK` controls feature statistics, not an explicitly enabled
 daily update check: OpenClaw sends the update-only `GET` request without a
 body containing anonymous feature statistics.
 
@@ -224,9 +224,9 @@ feature statistics. Setting `OPENCLAW_TELEMETRY_ENDPOINT` overrides the suppress
 because a configured endpoint means the run is deliberately exercising this
 path.
 
-## Disable every automatic update request
+## Automatic update request policy
 
-To go fully dark, disable the existing startup update check:
+Ironhead is fully dark by default. Keep the startup update check disabled with:
 
 ```json5
 {
@@ -236,7 +236,7 @@ To go fully dark, disable the existing startup update check:
 }
 ```
 
-This stops both tiers and every automatic update request: no update request,
+This keeps both tiers and every automatic update request disabled: no update request,
 anonymous feature statistics, or update notice, even when `update.auto.enabled` is `true`.
 Setting `OPENCLAW_NO_AUTO_UPDATE=1` also prevents automatic update requests.
 Explicit update commands remain available when you choose to run them.

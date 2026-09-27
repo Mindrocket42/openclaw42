@@ -19,7 +19,7 @@ async function setupAppRecommendations(
   params: Partial<Parameters<typeof setupAppRecommendationsWithOutcome>[0]>,
 ): Promise<OpenClawConfig> {
   const outcome = await setupAppRecommendationsWithOutcome({
-    config: {},
+    config: { wizard: { appRecommendations: true } },
     prompter: createPrompter(),
     runtime,
     workspaceDir: "/tmp/workspace",
@@ -144,7 +144,7 @@ describe("setupAppRecommendations", () => {
       const prompter = createPrompter(["recommendation:0", "recommendation:1"]);
       const persistedBeforeInstall: string[][] = [];
       const outcome = await setupAppRecommendationsWithOutcome({
-        config: {},
+        config: { wizard: { appRecommendations: true } },
         prompter,
         runtime,
         workspaceDir: state.workspaceDir,
@@ -201,8 +201,9 @@ describe("setupAppRecommendations", () => {
   });
 
   it.each([
+    [{}, "darwin" as const],
     [{ wizard: { appRecommendations: false } }, "darwin" as const],
-    [{}, "linux" as const],
+    [{ wizard: { appRecommendations: true } }, "linux" as const],
   ])("skips when gated", async (config, platform) => {
     const recommend = vi.fn(async () => recommendationResult());
     const store = storeDeps();
@@ -605,7 +606,7 @@ describe("setupAppRecommendations", () => {
     const installSkill = vi.fn();
 
     const outcome = await setupAppRecommendationsWithOutcome({
-      config: {},
+      config: { wizard: { appRecommendations: true } },
       prompter: createPrompter(["recommendation:0"]),
       runtime,
       workspaceDir: "/tmp/workspace",

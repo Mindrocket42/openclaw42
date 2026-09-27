@@ -46,9 +46,9 @@ The `models` root also owns global model-catalog behavior.
 ```json5
 {
   models: {
-    // Optional. Hosted catalog updates default on.
+    // Optional. Hosted catalog updates are opt-in in the Ironhead fork.
     catalogRefresh: {
-      enabled: true,
+      enabled: false,
       // url: "https://catalog.example.com/openclaw/catalog.json",
     },
   },
@@ -92,13 +92,14 @@ hosted catalog traffic.
 {
   discovery: {
     mdns: {
-      mode: "minimal", // minimal | full | off
+      mode: "off", // minimal | full | off
     },
   },
 }
 ```
 
-- `minimal` (default): omit `cliPath` + `sshPort` from TXT records.
+- `off` (Ironhead default): suppress LAN multicast advertising.
+- `minimal`: advertise bounded discovery metadata while omitting `cliPath` + `sshPort`.
 - `full`: include `cliPath` + `sshPort`; LAN multicast advertising still requires the bundled `bonjour` plugin to be enabled.
 - `off`: suppress LAN multicast advertising without changing plugin enablement.
 - The bundled `bonjour` plugin auto-starts on macOS hosts and is opt-in on Linux, Windows, and containerized Gateway deployments.
@@ -127,7 +128,7 @@ Setup: `openclaw dns setup --apply`.
 {
   update: {
     channel: "stable", // stable | extended-stable | beta | dev
-    checkOnStart: true,
+    checkOnStart: false,
 
     auto: {
       enabled: false,
@@ -137,10 +138,10 @@ Setup: `openclaw dns setup --apply`.
 ```
 
 - `channel`: release channel - `"stable"`, `"extended-stable"`, `"beta"`, or `"dev"`. Extended-stable is package-only: foreground commands own installation, while the Gateway may emit read-only update hints.
-- `checkOnStart`: check for updates through `https://telemetry.openclaw.ai/api/latest-version` when the Gateway starts and at most once every 24 hours afterward (default: `true`). The default request shares only the OpenClaw version and platform information in its `User-Agent`; anonymous feature statistics are included only when `telemetry.enabled` is `true`. Setting this to `false`, or setting `OPENCLAW_NO_AUTO_UPDATE=1`, prevents all automatic update requests, feature statistics, and update notices, even when `auto.enabled` is `true`. Stored extended-stable selections use the same read-only hint and 24-hour hint schedule.
+- `checkOnStart`: check for updates through `https://telemetry.openclaw.ai/api/latest-version` when the Gateway starts and at most once every 24 hours afterward (Ironhead default: `false`; set it to `true` to opt in). When enabled, the request shares the OpenClaw version and platform information in its `User-Agent`; anonymous feature statistics are included only when `telemetry.enabled` is `true`. Setting this to `false`, or setting `OPENCLAW_NO_AUTO_UPDATE=1`, prevents all automatic update requests, feature statistics, and update notices, even when `auto.enabled` is `true`. Stored extended-stable selections use the same read-only hint and 24-hour hint schedule.
 - `auto.enabled`: enable background auto-update campaigns for stable and beta package installs and dev git installs when `checkOnStart` is also enabled (default: `false`). Extended-stable never applies automatically.
 
-Headless nodes have a separate default-on `nodeHost.autoUpdate.enabled` policy
+Headless nodes require explicit `nodeHost.autoUpdate.enabled: true` in the Ironhead fork
 with hourly checks and idle-only activation. `update.checkOnStart: false` and
 `OPENCLAW_NO_AUTO_UPDATE=1` disable that policy too. See
 [Headless node updates](/install/updating/automatic-updates#headless-node-updates).
@@ -201,7 +202,7 @@ Behavior and metadata for CLI guided setup flows (`onboard`, `configure`, `docto
 
 - `wizard.accessMode`: discovery consent chosen at the start of guided onboarding. `"full"` (recommended) lets setup look for AI apps, keys, and local runtimes automatically; `"guarded"` makes setup ask once before looking around and offers manual configuration instead.
 
-- `wizard.appRecommendations` defaults to `true`. Set it to `false` to disable installed-application recommendations during guided or classic onboarding and block Gateway `device.apps` access. Node hosts still require their separate, default-off installed-app sharing flag before they advertise the command.
+- `wizard.appRecommendations` defaults to disabled in the Ironhead fork and must be set to `true` before installed-app inventory can be scanned or sent to recommendation services. Set it to `false` to disable installed-application recommendations during guided or classic onboarding and block Gateway `device.apps` access. Node hosts still require their separate, default-off installed-app sharing flag before they advertise the command.
 
 ---
 

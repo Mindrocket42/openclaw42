@@ -13,10 +13,10 @@ type ResolvedSwarmConfig = {
 
 const DEFAULT_SWARM_CONFIG: ResolvedSwarmConfig = {
   enabled: true,
-  maxConcurrent: 32,
-  maxChildrenPerGroup: 50,
-  maxTotalPerGroup: 200,
-  waitTimeoutSecondsMax: 600,
+  maxConcurrent: 4,
+  maxChildrenPerGroup: 8,
+  maxTotalPerGroup: 24,
+  waitTimeoutSecondsMax: 300,
   defaultAgentId: "",
 };
 
@@ -46,22 +46,22 @@ export function resolveSwarmConfig(config?: OpenClawConfig, agentId?: string): R
     maxConcurrent: readBoundedPositiveInteger(
       raw.maxConcurrent,
       DEFAULT_SWARM_CONFIG.maxConcurrent,
-      1_000,
+      16,
     ),
     maxChildrenPerGroup: readBoundedPositiveInteger(
       raw.maxChildrenPerGroup,
       DEFAULT_SWARM_CONFIG.maxChildrenPerGroup,
-      10_000,
+      32,
     ),
     maxTotalPerGroup: readBoundedPositiveInteger(
       raw.maxTotalPerGroup,
       DEFAULT_SWARM_CONFIG.maxTotalPerGroup,
-      100_000,
+      128,
     ),
     waitTimeoutSecondsMax: readBoundedPositiveInteger(
       raw.waitTimeoutSecondsMax,
       DEFAULT_SWARM_CONFIG.waitTimeoutSecondsMax,
-      24 * 60 * 60,
+      60 * 60,
     ),
     defaultAgentId: typeof raw.defaultAgentId === "string" ? raw.defaultAgentId.trim() : "",
   };

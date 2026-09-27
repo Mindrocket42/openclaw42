@@ -48,7 +48,7 @@ export async function startGatewayDiscovery(params: {
   tailscaleMode: "off" | "serve" | "funnel";
   logDiscovery: { info: (msg: string) => void; warn: (msg: string) => void };
 }): Promise<GatewayDiscovery> {
-  let mode = params.discovery?.mdns?.mode ?? "minimal";
+  let mode = params.discovery?.mdns?.mode ?? "off";
   let tlsFingerprint = params.gatewayTls?.fingerprintSha256;
   const wideAreaDomain = params.discovery?.wideArea?.domain;
   let services = params.gatewayDiscoveryServices ?? [];
@@ -247,7 +247,7 @@ export async function startGatewayDiscovery(params: {
     }
   };
   const update: GatewayDiscovery["update"] = (next, nextClaim = claim) => {
-    const nextMode = "mdnsMode" in next ? (next.mdnsMode ?? "minimal") : mode;
+    const nextMode = "mdnsMode" in next ? (next.mdnsMode ?? "off") : mode;
     const nextServices = next.gatewayDiscoveryServices ?? services;
     const nextTlsFingerprint = next.gatewayTlsFingerprintSha256 ?? tlsFingerprint;
     if (

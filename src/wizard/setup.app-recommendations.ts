@@ -126,12 +126,11 @@ export async function setupAppRecommendations(params: {
   deps?: SetupAppRecommendationDeps;
 }): Promise<SetupAppRecommendationsOutcome> {
   const platform = params.platform ?? process.platform;
-  // Product decision: default-on "magical" scan with a kill switch, not
-  // consent-first. App labels/bundle ids go to the user's configured model and
-  // ClawHub search; a static disclosure stays in scrollback before app names
-  // leave the machine, while results repeat it. The config flag disables the step.
+  // Ironhead policy: installed-app inventory is private machine state. App labels
+  // and bundle ids can leave the machine through the configured model and ClawHub
+  // search, so discovery is consent-first and requires an explicit opt-in.
   if (
-    params.config.wizard?.appRecommendations === false ||
+    params.config.wizard?.appRecommendations !== true ||
     platform !== "darwin" ||
     !params.modelRouteVerified
   ) {
