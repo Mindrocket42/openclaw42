@@ -606,7 +606,7 @@ describe("setupAppRecommendations", () => {
     const installSkill = vi.fn();
 
     const outcome = await setupAppRecommendationsWithOutcome({
-      config: {},
+      config: { wizard: { appRecommendations: true } },
       prompter: createPrompter(["recommendation:0"]),
       runtime,
       workspaceDir: "/tmp/workspace",
