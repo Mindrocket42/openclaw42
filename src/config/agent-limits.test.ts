@@ -10,7 +10,23 @@ async function importFreshAgentLimits(scope: string): Promise<typeof import("./a
 describe("resolveAgentMaxConcurrent", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    describe("resolveSubagentMaxConcurrent", () => {
+    it("defaults to four and caps explicit values at eight", async () => {
+      const runtime = await importFreshAgentLimits("subagent-limits");
+      expect(runtime.resolveSubagentMaxConcurrent()).toBe(4);
+      expect(
+        runtime.resolveSubagentMaxConcurrent({
+          agents: { defaults: { subagents: { maxConcurrent: 3 } } },
+        }),
+      ).toBe(3);
+      expect(
+        runtime.resolveSubagentMaxConcurrent({
+          agents: { defaults: { subagents: { maxConcurrent: 64 } } },
+        }),
+      ).toBe(8);
+    });
   });
+});
 
   it.each([
     { availableParallelism: 1, expected: 4 },
