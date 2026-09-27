@@ -5,10 +5,10 @@ describe("resolveSwarmConfig", () => {
   it("defaults on with the frozen limits", () => {
     expect(resolveSwarmConfig()).toEqual({
       enabled: true,
-      maxConcurrent: 32,
-      maxChildrenPerGroup: 50,
-      maxTotalPerGroup: 200,
-      waitTimeoutSecondsMax: 600,
+      maxConcurrent: 4,
+      maxChildrenPerGroup: 8,
+      maxTotalPerGroup: 24,
+      waitTimeoutSecondsMax: 300,
       defaultAgentId: "",
     });
   });
@@ -34,18 +34,18 @@ describe("resolveSwarmConfig", () => {
     ).toEqual({
       enabled: true,
       maxConcurrent: 4,
-      maxChildrenPerGroup: 10_000,
+      maxChildrenPerGroup: 32,
       maxTotalPerGroup: 2,
-      waitTimeoutSecondsMax: 86_400,
+      waitTimeoutSecondsMax: 3_600,
       defaultAgentId: "reviewer",
     });
   });
 
   it.each([
-    { field: "maxConcurrent", fallback: 32, max: 1_000 },
-    { field: "maxChildrenPerGroup", fallback: 50, max: 10_000 },
-    { field: "maxTotalPerGroup", fallback: 200, max: 100_000 },
-    { field: "waitTimeoutSecondsMax", fallback: 600, max: 86_400 },
+    { field: "maxConcurrent", fallback: 4, max: 16 },
+    { field: "maxChildrenPerGroup", fallback: 8, max: 32 },
+    { field: "maxTotalPerGroup", fallback: 24, max: 128 },
+    { field: "waitTimeoutSecondsMax", fallback: 300, max: 3_600 },
   ] as const)("preserves the documented bounds for $field", ({ field, fallback, max }) => {
     for (const value of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY]) {
       expect(resolveSwarmConfig({ tools: { swarm: { [field]: value } } })[field]).toBe(fallback);
