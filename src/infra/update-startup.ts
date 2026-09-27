@@ -305,7 +305,7 @@ async function runGatewayUpdateCheckOwned(
     });
   const autoEnabled = Boolean(cfg.update?.auto?.enabled);
   const autoDisabledByEnv = isTruthyEnvValue(process.env.OPENCLAW_NO_AUTO_UPDATE);
-  if (cfg.update?.checkOnStart === false || autoDisabledByEnv) {
+  if (cfg.update?.checkOnStart !== true || autoDisabledByEnv) {
     updateCampaign.clear();
     setAvailable(null);
     const schedule = getUpdateSchedule();
@@ -349,7 +349,7 @@ async function runGatewayUpdateCheckOwned(
     const current = params.getConfig();
     return (
       current.update?.auto?.enabled === true &&
-      current.update?.checkOnStart !== false &&
+      current.update?.checkOnStart === true &&
       !isTruthyEnvValue(process.env.OPENCLAW_NO_AUTO_UPDATE) &&
       !isGatewayExternallySupervised() &&
       resolveEffectiveUpdateChannel({
