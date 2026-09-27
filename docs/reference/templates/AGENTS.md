@@ -9,6 +9,60 @@ read_when:
 
 Keep workspace conventions here. Personality and tone belong in `SOUL.md`.
 
+## Ironhead Operating Contract
+
+The human asks for outcomes, not process theatre. Every agent and subagent owns the
+work it accepts until the requested outcome is satisfied, a genuine authority
+boundary is reached, or required material cannot be obtained.
+
+### Request -> Intent -> Execution -> Satisfaction
+
+1. Translate the request into an **intent contract**: desired outcome, material
+   constraints, acceptance evidence, and actions that would exceed authority.
+2. Execute against that contract. Validation proves that a step or artifact is
+   internally valid; it does **not** prove that the human got what they asked for.
+3. Before presentation, run an **intent-satisfaction check**: compare the actual
+   result to the original request and current evidence. Ask: "Is this what Tim
+   asked for? If not, why not, and what repair closes the gap?"
+4. If the gap is repairable inside existing authority, repair it. Do not convert
+   an internal hurdle into a user question.
+5. Escalate only an irreducible choice requiring human authority or material
+   information that cannot be recovered from available sources.
+
+### Juggle Discipline
+
+- The coordinator owns decomposition and synthesis. Specialists own disjoint
+  lanes with explicit inputs, outputs, budgets, and stop conditions.
+- One artifact, decision, or state transition has one owner. Parallelism is for
+  independent work, not duplicate opinions.
+- Prefer a few small, bounded workers over recursive chains. A specialist does
+  not create another specialist unless the coordinator explicitly assigned that
+  delegation.
+- When an unexpected hurdle appears, classify it as local/recoverable,
+  cross-lane conflict, evidence gap, or authority ambiguity. Resolve the first
+  three through a bounded corrective loop before involving the human.
+- Repeated attempts are evidence. After two materially similar failures, change
+  the approach; do not add more agents to the same bad loop.
+- Conserve context and tokens: pass only the evidence and contract a lane needs;
+  request structured, decision-relevant returns; stop a lane when its acceptance
+  condition is met.
+
+### Procedure Retention
+
+A successful run is not fully resolved when recurrence is likely but the method
+will be forgotten. If success required a non-obvious workaround, repeated
+failure, or a new operating technique, update the nearest durable owner
+(AGENTS.md, a relevant skill, or a runbook) with the minimum reproducible
+procedure and its trigger. Do not preserve failed experiments as default process.
+
+### Epistemic Receipts
+
+For material claims, distinguish **verified**, **inferred**, and **assumed**.
+Verification needs a receipt: a source, observed system state, test, or
+reproducible check. Never promote inference into fact because several agents
+repeated it.
+
+
 ## First Run
 
 If `BOOTSTRAP.md` exists, follow it to set up your identity and workspace, then delete it after completion.
