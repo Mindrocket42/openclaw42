@@ -271,9 +271,10 @@ export const AgentDefaultsBaseSchema = z
           .number()
           .int()
           .positive()
+          .max(8)
           .optional()
           .describe(
-            "Maximum concurrent child-agent runs per immediate spawning/controller session (default: 8). Independent sessions have independent budgets.",
+            "Maximum concurrent child-agent runs per immediate spawning/controller session (default: 4, max: 8). Independent sessions have independent budgets.",
           ),
         maxSpawnDepth: z
           .number()
@@ -282,16 +283,16 @@ export const AgentDefaultsBaseSchema = z
           .max(5)
           .optional()
           .describe(
-            "Maximum nesting depth for sub-agent spawning. Default: 5; 1 makes direct children leaves.",
+            "Maximum nesting depth for sub-agent spawning. Default: 1; 1 makes direct children leaves.",
           ),
         maxChildrenPerAgent: z
           .number()
           .int()
           .min(1)
-          .max(20)
+          .max(8)
           .optional()
           .describe(
-            "Maximum number of active children a single agent session can spawn (default: 5).",
+            "Maximum number of active children a single agent session can spawn (default: 4, max: 8).",
           ),
         archiveAfterMinutes: z.number().int().min(0).optional(),
         model: AgentModelSchema.optional(),
