@@ -30,8 +30,8 @@ type NodeUpdateRuntime = {
 
 function updatesEnabled(config: OpenClawConfig, env: NodeJS.ProcessEnv): boolean {
   return (
-    config.nodeHost?.autoUpdate?.enabled !== false &&
-    config.update?.checkOnStart !== false &&
+    config.nodeHost?.autoUpdate?.enabled === true &&
+    config.update?.checkOnStart === true &&
     !isTruthyEnvValue(env.OPENCLAW_NO_AUTO_UPDATE) &&
     !isTruthyEnvValue(env.OPENCLAW_NO_RESPAWN)
   );
