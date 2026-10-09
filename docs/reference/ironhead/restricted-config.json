@@ -1,0 +1,80 @@
+{
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback"
+  },
+  "agents": {
+    "entries": {
+      "ironhead": {
+        "default": true,
+        "name": "Ironhead",
+        "subagents": { "allowAgents": ["ironhead", "reviewer"] }
+      },
+      "reviewer": {
+        "name": "Consigliere",
+        "model": "provider/model",
+        "models": {
+          "provider/model": { "agentRuntime": { "id": "openclaw" }, "codeMode": false }
+        },
+        "tools": {
+          "allow": ["read"],
+          "elevated": { "enabled": false },
+          "exec": { "mode": "deny" },
+          "codeMode": false
+        }
+      }
+    },
+    "defaults": {
+      "model": "provider/model",
+      "models": {
+        "provider/model": { "agentRuntime": { "id": "openclaw" } }
+      },
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 4,
+        "maxChildrenPerAgent": 4,
+        "maxSpawnDepth": 1
+      },
+      "sandbox": {
+        "mode": "all",
+        "backend": "docker",
+        "scope": "session",
+        "workspaceAccess": "none",
+        "docker": {
+          "network": "none",
+          "readOnlyRoot": true,
+          "capDrop": ["ALL"],
+          "pidsLimit": 128,
+          "memory": "1g",
+          "memorySwap": "1g",
+          "cpus": 1
+        }
+      }
+    }
+  },
+  "tools": {
+    "allow": ["read", "write", "edit", "apply_patch", "exec", "process", "sessions_spawn", "agents_wait"],
+    "elevated": { "enabled": false },
+    "exec": { "host": "sandbox", "timeoutSeconds": 300 },
+    "fs": { "workspaceOnly": true },
+    "loopDetection": { "enabled": true },
+    "codeMode": {
+      "enabled": true,
+      "executor": "quickjs",
+      "memoryLimitBytes": 67108864,
+      "maxPendingToolCalls": 8
+    },
+    "swarm": {
+      "enabled": true,
+      "maxConcurrent": 4,
+      "maxChildrenPerGroup": 8,
+      "maxTotalPerGroup": 24
+    },
+    "sandbox": {
+      "tools": {
+        "allow": ["read", "write", "edit", "apply_patch", "exec", "process", "sessions_spawn", "agents_wait"]
+      }
+    }
+  },
+  "browser": { "enabled": false }
+}

@@ -524,6 +524,7 @@ mkdir -p "$OPENCLAW_CONFIG_DIR/agents/main/sessions"
 export OPENCLAW_CONFIG_DIR
 export OPENCLAW_WORKSPACE_DIR
 export OPENCLAW_AUTH_PROFILE_SECRET_DIR
+export OPENCLAW_PUBLISH_HOST="${OPENCLAW_PUBLISH_HOST:-127.0.0.1}"
 export OPENCLAW_GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 export OPENCLAW_BRIDGE_PORT="${OPENCLAW_BRIDGE_PORT:-18790}"
 export OPENCLAW_GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-lan}"
@@ -714,6 +715,7 @@ upsert_env "$ENV_FILE" \
   OPENCLAW_CONFIG_DIR \
   OPENCLAW_WORKSPACE_DIR \
   OPENCLAW_AUTH_PROFILE_SECRET_DIR \
+  OPENCLAW_PUBLISH_HOST \
   OPENCLAW_GATEWAY_PORT \
   OPENCLAW_BRIDGE_PORT \
   OPENCLAW_GATEWAY_BIND \
@@ -965,7 +967,8 @@ fi
 
 echo ""
 echo "Gateway running with host port mapping."
-echo "Access from tailnet devices via the host's tailnet IP."
+echo "Published host address: $OPENCLAW_PUBLISH_HOST (default: loopback only)."
+echo "For tailnet access, set OPENCLAW_PUBLISH_HOST to the host's tailnet IP and rerun setup."
 echo "Config: $OPENCLAW_CONFIG_DIR"
 echo "Workspace: $OPENCLAW_WORKSPACE_DIR"
 echo "Token: stored in Docker environment/config (not printed)."

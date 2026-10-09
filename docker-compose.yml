@@ -65,10 +65,12 @@ services:
       - no-new-privileges:true
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    # Publish locally by default; opt into LAN/tailnet access with a host IP
+    # or 0.0.0.0 after configuring gateway authentication and firewall rules.
     ports:
-      - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
-      - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
-      - "${OPENCLAW_MSTEAMS_PORT:-3978}:3978"
+      - "${OPENCLAW_PUBLISH_HOST:-127.0.0.1}:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+      - "${OPENCLAW_PUBLISH_HOST:-127.0.0.1}:${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+      - "${OPENCLAW_PUBLISH_HOST:-127.0.0.1}:${OPENCLAW_MSTEAMS_PORT:-3978}:3978"
     init: true
     restart: unless-stopped
     command:

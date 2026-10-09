@@ -79,6 +79,10 @@ describe("Code Mode MCP namespace model", () => {
       "mcp/index.d.ts",
       "mcp/github.d.ts",
     ]);
+    const agentsApi = runtime.apiFiles.find((file) => file.path === "agents.d.ts")?.content;
+    expect(agentsApi).toContain("juggle(options: JuggleOptions): Promise<JuggleResult>");
+    expect(agentsApi).toContain("retain(bytes: string");
+    expect(agentsApi).toContain("reviewerAgentId: string");
     for (const file of runtime.apiFiles) {
       expect(file.bytes).toBe(Buffer.byteLength(file.content, "utf8"));
     }

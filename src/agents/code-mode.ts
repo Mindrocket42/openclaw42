@@ -152,7 +152,7 @@ function createCodeModeExecDescription(
       ? " MCP tools use the `MCP` namespace or callable `catalog.search` handles."
       : "";
   const swarmGuidance = swarmEnabled
-    ? " Swarm globals `agents.run`, `phase`, and `log` are available; read `agents.d.ts` for types and orchestration idioms."
+    ? " Swarm globals `agents.run`, `agents.juggle`, `phase`, and `log` are available; read `agents.d.ts` for types. `agents.juggle` requires original request, acceptance, disjoint lanes, restricted reviewerAgentId, and retain(bytes, procedure) returning an artifact path; native read verifies exact saved bytes."
     : "";
   // Nodes ride the owner-only core tool; advertising the namespace to a run
   // whose catalog cannot resolve it turns the hint into hallucination bait.

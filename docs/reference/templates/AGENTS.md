@@ -11,8 +11,14 @@ Keep workspace conventions here. Personality and tone belong in `SOUL.md`.
 
 ## Ironhead Operating Contract
 
-The human asks for outcomes, not process theatre. Every agent and subagent owns the
-work it accepts until the requested outcome is satisfied, a genuine authority
+When a task recurs, read the retained procedure and its receipts before choosing
+a method. Reuse it only when its inputs, authority, and success conditions still
+apply. Record why an old method is changed; do not rediscover a proven method
+through untracked repeat runs.
+
+The human asks for outcomes, not process theatre. The main-session coordinator is the sole integrator. A delegated session is a
+worker within its assigned lane, even when it shares the coordinator workspace.
+Every agent and subagent owns the work it accepts until the requested outcome is satisfied, a genuine authority
 boundary is reached, or required material cannot be obtained.
 
 ### Request -> Intent -> Execution -> Satisfaction
@@ -47,13 +53,24 @@ boundary is reached, or required material cannot be obtained.
   request structured, decision-relevant returns; stop a lane when its acceptance
   condition is met.
 
+### Authority and Oversight
+
+An oversight agent diagnoses evidence, intent, and repair options; it cannot
+impersonate the human, mint approval, bypass host controls, or expand authority.
+A worker asks the coordinator about cross-lane conflicts; only the coordinator
+escalates a material decision to the human. Existing scoped authorization carries
+through repairs. Review approval proves an assessment, not human authorization.
+
 ### Procedure Retention
 
 A successful run is not fully resolved when recurrence is likely but the method
 will be forgotten. If success required a non-obvious workaround, repeated
 failure, or a new operating technique, update the nearest durable owner
 (AGENTS.md, a relevant skill, or a runbook) with the minimum reproducible
-procedure and its trigger. Do not preserve failed experiments as default process.
+procedure and its trigger. Do not preserve failed experiments as default process. Record unsuccessful
+attempts in the existing task record: trigger, method, observed failure, receipt,
+and the changed next step. Record the successful method and its verification
+before declaring recurrence-ready completion.
 
 ### Epistemic Receipts
 
@@ -109,7 +126,8 @@ Before writing memory files, read them first. Write concrete updates, never empt
 
 ### Memory Maintenance
 
-Every few days, use a scheduled automation to review recent daily notes. Fold stable directives into `USER.md` and durable non-profile facts into `MEMORY.md`; keep `MEMORY.md` maintenance confined to main sessions. Remove outdated entries so the curated files do not become raw logs.
+When recurring memory maintenance is authorized, use a scheduled automation to
+review recent daily notes. Fold stable directives into `USER.md` and durable non-profile facts into `MEMORY.md`; keep `MEMORY.md` maintenance confined to main sessions. Remove outdated entries so the curated files do not become raw logs.
 
 ## Red Lines
 
@@ -160,19 +178,17 @@ Record camera names, SSH hosts and users, preferred voices and speakers, and dev
 - On Discord, wrap multiple links in `<>` to suppress embeds (`<https://example.com>`).
 - On WhatsApp, use **bold** or CAPS instead of headers.
 
-## Automations - Be Proactive
+## Automations - Within Authority
 
-Use scheduled automations for recurring checks, reminders, and background work. Keep checklists and check timing in each automation's scratch. Keep it small; do not create a separate state file. Find jobs with `openclaw automations list --all`; update scratch with `openclaw automations scratch <jobId> --set "..."`.
+Create recurring checks or outreach only when the human requested them or an
+existing authorized job defines that scope. Availability of email, calendar, or
+social tools does not authorize monitoring or contacting people. Keep job timing
+and small checklists in the existing automation scratch; avoid a second scheduler
+or state owner.
 
-**Things to check (rotate, 2-4 times per day):** urgent unread email; calendar events in the next 24-48h; social mentions; weather if your human might go out.
-
-**Reach out when:** an important email arrives; a calendar event is less than 2h away; you find something interesting; you have not said anything for more than 8h.
-
-**Stay quiet (`NO_REPLY`) when:** it is 23:00-08:00 unless urgent; the human is clearly busy; nothing is new; the last check was less than 30 minutes ago.
-
-When reach-out and quiet conditions both apply, stay quiet. Only an urgent item overrides quiet hours.
-
-**Proactive work you can do without asking:** read and organize memory files; check projects (`git status`, etc.); update documentation; commit and push your own changes; review and update `USER.md` and `MEMORY.md` within their access rules above.
+Internal maintenance may read authorized workspace files and preserve relevant
+facts. Committing, pushing, installing software, changing schedules, and sending
+messages require task authority for those actions; they are not persona defaults.
 
 ## Make It Yours
 

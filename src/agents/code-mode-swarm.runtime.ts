@@ -6,6 +6,10 @@ import {
   captureAgentToolSourceExecutionGuard,
   runAgentToolSourceExecutionGuard,
 } from "./agent-tool-source-execution-guard.js";
+import { resolveAgentModelPrimaryValue } from "../config/model-input.js";
+import { resolveAgentConfig } from "./agent-scope-config.js";
+import { resolveConfiguredSubagentSpawnModelSelection } from "./model-selection.js";
+import { resolveModelRuntimePolicy } from "./model-runtime-policy.js";
 import type { PendingBridgeRequest } from "./code-mode-worker-types.js";
 import type { AgentToolUpdateCallback } from "./runtime/index.js";
 import {
@@ -73,6 +77,65 @@ function readOptionalStringOption(
   return value.trim();
 }
 
+// Admission checks the configured agent's ordinary tool policy; the guest cannot
+// create authority by calling a worker "read only" in its prompt or options.
+// session_status is excluded because its model option mutates session state.
+function assertReadOnlyReviewer(
+  ctx: ToolSearchToolContext,
+  agentId: string | undefined,
+  modelOverride?: string,
+): string {
+  const cfg = ctx.runtimeConfig ?? ctx.config;
+  if (!cfg || !agentId) {
+    throw new ToolInputError("Read-only reviewer requires an explicit configured agentId and config.");
+  }
+  const agent = resolveAgentConfig(cfg, agentId);
+  const tools = agent?.tools;
+  const codeMode = tools?.codeMode;
+  const codeModeDisabled = codeMode === false || (isRecord(codeMode) && codeMode.enabled === false);
+  if (
+    !tools ||
+    !resolveAgentModelPrimaryValue(agent?.model) ||
+    agent?.runtime?.type === "acp" ||
+    Object.values(agent?.models ?? {}).some(
+      (entry) => entry.codeMode !== undefined && entry.codeMode !== false,
+    ) ||
+    !Array.isArray(tools.allow) ||
+    tools.allow.length === 0 ||
+    tools.allow.some((name) => name !== "read") ||
+    (tools.alsoAllow?.length ?? 0) > 0 ||
+    Object.keys(tools.byProvider ?? {}).length > 0 ||
+    (cfg?.tools?.alsoAllow?.length ?? 0) > 0 ||
+    Object.keys(cfg?.tools?.byProvider ?? {}).length > 0 ||
+    !codeModeDisabled ||
+    tools.elevated?.enabled !== false
+  ) {
+    throw new ToolInputError(
+      "Read-only reviewer requires an explicit configured agentId and primary model, a nonempty tools.allow limited to read, codeMode and elevated disabled, and no alsoAllow or byProvider expansions.",
+    );
+  }
+  const selection = resolveConfiguredSubagentSpawnModelSelection({
+    cfg,
+    agentId,
+    modelOverride,
+    includeAgentPrimary: true,
+  });
+  const slash = selection?.indexOf("/") ?? -1;
+  const policy =
+    selection && slash > 0
+      ? resolveModelRuntimePolicy({
+          config: cfg,
+          agentId,
+          provider: selection.slice(0, slash),
+          modelId: selection.slice(slash + 1),
+        })
+      : undefined;
+  if (!selection || policy?.policy?.id !== "openclaw") {
+    throw new ToolInputError("Read-only reviewer requires an explicitly configured openclaw model runtime.");
+  }
+  return selection;
+}
+
 async function runAgentSpawnBridge(params: {
   runtime: ToolSearchRuntime;
   parentToolCallId: string;
@@ -87,6 +150,10 @@ async function runAgentSpawnBridge(params: {
   if (typeof prompt !== "string" || !prompt.trim()) {
     throw new ToolInputError("agents.run prompt must be a non-empty string.");
   }
+  const readOnly = options.readOnly;
+  if (readOnly !== undefined && typeof readOnly !== "boolean") {
+    throw new ToolInputError("agents.run readOnly must be boolean.");
+  }
   const fastMode = options.fastMode;
   if (fastMode !== undefined && fastMode !== true && fastMode !== false && fastMode !== "auto") {
     throw new ToolInputError('agents.run fastMode must be boolean or "auto".');
@@ -99,6 +166,7 @@ async function runAgentSpawnBridge(params: {
   const model = readOptionalStringOption(options, "model");
   const thinking = readOptionalStringOption(options, "thinking");
   const agentId = readOptionalStringOption(options, "agentId");
+  const reviewerModel = readOnly === true ? assertReadOnlyReviewer(params.ctx, agentId, model) : undefined;
   const catalog = params.ctx.catalogRef?.current;
   const spawnEntry = catalog?.entries.find(
     (entry) => entry.name === "sessions_spawn" && isCollectorSpawnTool(entry.tool),
@@ -121,6 +189,11 @@ async function runAgentSpawnBridge(params: {
     ) {
       throw new ToolInputError("Joined collector spawn catalog is no longer active.");
     }
+    if (readOnly === true) {
+      if (assertReadOnlyReviewer(params.ctx, agentId, model) !== reviewerModel) {
+        throw new ToolInputError("Read-only reviewer model changed during spawn.");
+      }
+    }
     runAgentToolSourceExecutionGuard(spawnTool);
   };
   assertCurrent();
@@ -129,14 +202,14 @@ async function runAgentSpawnBridge(params: {
     collect: true,
     groupId: resolveCodeModeSwarmGroupId(params.ctx),
     ...(label ? { label } : {}),
-    ...(model ? { model } : {}),
+    ...((reviewerModel ?? model) ? { model: reviewerModel ?? model } : {}),
     ...(thinking ? { thinking } : {}),
     ...(agentId ? { agentId } : {}),
     ...(fastMode !== undefined ? { fastMode } : {}),
     ...(schema ? { outputSchema: schema } : {}),
   };
   const requestFingerprint = `sha256:${createHash("sha256")
-    .update(stableStringify(spawnInput))
+    .update(stableStringify(readOnly === true ? { ...spawnInput, readOnly: true } : spawnInput))
     .digest("hex")}`;
   // The registry persists this exact tuple and payload hash before launch.
   const idempotencyKey = `${params.codeModeRunId}:${params.request.id}`;
@@ -172,12 +245,20 @@ async function runAgentSpawnBridge(params: {
   Object.defineProperty(spawnInput, SWARM_CODE_MODE_REQUEST_FINGERPRINT, {
     value: requestFingerprint,
   });
-  const called = await runWithJoinedCollectorSpawn(spawnEntry.tool, assertCurrent, () =>
-    params.runtime.callExactId(spawnEntry.id, spawnInput, {
+  const called = await runWithJoinedCollectorSpawn(
+    spawnEntry.tool,
+    assertCurrent,
+    () => params.runtime.callExactId(spawnEntry.id, spawnInput, {
       parentToolCallId: params.parentToolCallId,
       signal: params.signal,
       onUpdate: params.onUpdate,
     }),
+    readOnly === true ? (prepared) => {
+      if (prepared.agentId !== agentId || prepared.model !== reviewerModel || prepared.collect !== true || prepared.runtime === "acp") {
+        throw new ToolInputError("Read-only reviewer prepared spawn must retain its native agentId and collector mode.");
+      }
+      assertCurrent();
+    } : undefined,
   );
   assertCurrent();
   const value =

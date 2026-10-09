@@ -24,6 +24,7 @@ const collectorFieldsBySchema = new WeakMap<object, Record<string, unknown>>();
 type JoinedSpawn = {
   owner: AgentToolAvailabilityBinding;
   assertCurrent: () => void;
+  assertInput?: (input: Record<PropertyKey, unknown>) => void;
   active: boolean;
   toolCallId?: string;
   claimed: boolean;
@@ -137,12 +138,13 @@ export async function runWithJoinedCollectorSpawn<T>(
   tool: object,
   assertCurrent: () => void,
   run: () => Promise<T>,
+  assertInput?: (input: Record<PropertyKey, unknown>) => void,
 ): Promise<T> {
   const owner = getAgentToolAvailabilityBinding(tool);
   if (!owner || !spawnCapabilities.has(owner)) {
     throw new ToolInputError("agents.run requires the native collector spawn tool.");
   }
-  const joined: JoinedSpawn = { owner, assertCurrent, active: true, claimed: false };
+  const joined: JoinedSpawn = { owner, assertCurrent, assertInput, active: true, claimed: false };
   return await joinedSpawns.run(joined, async () => {
     try {
       assertJoinedSpawn(joined);
@@ -166,16 +168,37 @@ export function bindJoinedCollectorInvocation(tool: object, toolCallId: string):
   joined.toolCallId = toolCallId;
 }
 
+// Prepared hooks can rewrite collect itself; validate joined authority before
+// the tool branches between ordinary and collector spawning.
+export function assertJoinedCollectorInput(
+  tool: object,
+  toolCallId: string,
+  input: Record<PropertyKey, unknown>,
+): void {
+  const joined = joinedSpawns.getStore();
+  if (joined && joined.owner === getAgentToolAvailabilityBinding(tool) && joined.toolCallId === toolCallId) {
+    assertJoinedSpawn(joined);
+    joined.assertInput?.(input);
+  }
+}
+
 export function captureCollectorSpawnGuard(
   tool: object,
   toolCallId: string,
   assertActive: () => void,
+  input?: Record<PropertyKey, unknown>,
 ): () => void {
   const owner = getAgentToolAvailabilityBinding(tool);
   const capability = owner && spawnCapabilities.get(owner);
   const joined = joinedSpawns.getStore();
   if (joined && joined.owner === owner && joined.toolCallId === toolCallId) {
     assertJoinedSpawn(joined);
+    if (joined.assertInput) {
+      if (!input) {
+        throw new ToolInputError("Joined collector spawn requires prepared input.");
+      }
+      joined.assertInput(input);
+    }
     if (joined.claimed) {
       throw new ToolInputError("Joined collector spawn was already claimed.");
     }
@@ -184,6 +207,9 @@ export function captureCollectorSpawnGuard(
       assertActive();
       capability?.signal?.throwIfAborted();
       assertJoinedSpawn(joined);
+      if (input) {
+        joined.assertInput?.(input);
+      }
     };
   }
   return () => {

@@ -256,7 +256,7 @@ export const CODE_MODE_CONTROLLER_SOURCE = String.raw`
   if (globalThis.__openclawSwarmEnabled === true) {
     Object.defineProperties(globalThis, {
       agents: {
-        value: Object.freeze({ run: runAgent }),
+        value: Object.freeze({ run: runAgent, juggle: juggleAgents }),
         enumerable: true,
       },
       phase: { value: (title) => swarmNote("phase", title), enumerable: true },

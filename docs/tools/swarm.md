@@ -146,6 +146,26 @@ phase(title: string): void;
 log(message: string): void;
 ```
 
+For bounded outcome coordination, Code Mode also exposes `agents.juggle(options)`.
+Supply the original `request`, an `acceptance` condition, one to four `lanes`
+(each with `id`, `owner`, `prompt`, `method`, and disjoint `resources`), and an
+restricted `reviewerAgentId`, and an async `retain(bytes, procedure)` callback that
+writes the exact supplied bytes through existing tools and returns the artifact
+path. The controller independently uses native `read` to verify exact saved content.
+Optional `tokenBudget` defaults to 50000; `maxCorrections` defaults to two and
+cannot exceed two. The reviewer must be explicitly configured with a host-enforced read-only tool surface.
+
+Juggle admits collectors sequentially, reviews original intent against evidence,
+and repairs only existing lanes. Two failed attempts using the same method require
+a changed method; up to two bounded reviewer diagnostic retries select it. The
+complete flow launches at most 17 collectors. Reported worker and reviewer input/output tokens share one admission budget,
+excluding cache read/write token fields and provider charges. Spent or
+missing usage stops new admission. This budget does not preempt a running provider
+call. Completion requires verified procedure retention, with one bounded retention
+retry. Results have status `satisfied`, `blocked`, or `needs_human`, plus evidence
+and usage; a human escalation must name missing authority or material input.
+Declared resources coordinate this flow and do not replace tool policy or sandboxing.
+
 Without `schema`, `agents.run()` resolves to the child's final text. With a
 JSON Schema, it resolves to the value submitted through the child's
 `structured_output` tool. A failed, killed, timed-out, or schema-invalid child

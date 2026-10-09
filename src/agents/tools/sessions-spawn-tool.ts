@@ -33,6 +33,7 @@ import {
   SWARM_CODE_MODE_REQUEST_FINGERPRINT,
 } from "../subagents/swarm/swarm-code-mode.js";
 import {
+  assertJoinedCollectorInput,
   bindCollectorSpawnTool,
   captureCollectorSpawnGuard,
 } from "../subagents/swarm/swarm-collector-capability.js";
@@ -379,6 +380,7 @@ export function createSessionsSpawnTool(
             : (signal ?? opts?.signal);
         const assertSourceActive = captureAgentToolSourceExecutionGuard(executionSignal);
         const params = args as Record<PropertyKey, unknown>;
+        assertJoinedCollectorInput(tool, _toolCallId, params);
         if (opts?.swarmCollector && params.collect !== true) {
           throw new ToolInputError(
             "sessions_spawn from a collector requires collect=true so approvals stay non-interactive.",
@@ -395,7 +397,7 @@ export function createSessionsSpawnTool(
         const hasCollectParam = Object.hasOwn(params, "collect");
         const collect = params.collect === true;
         const assertActive = collect
-          ? captureCollectorSpawnGuard(tool, _toolCallId, assertSourceActive)
+          ? captureCollectorSpawnGuard(tool, _toolCallId, assertSourceActive, params)
           : assertSourceActive;
         assertActive();
         if (params.outputSchema !== undefined && !collect) {

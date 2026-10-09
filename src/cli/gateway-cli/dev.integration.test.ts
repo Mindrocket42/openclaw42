@@ -49,7 +49,11 @@ describe("ensureDevGatewayConfig integration", () => {
       dev: {
         default: true,
         workspace: `${workspace}-dev`,
-        identity: { name: "C3-PO", theme: "protocol droid", emoji: "🤖" },
+        identity: {
+          name: "Ironhead",
+          theme: "Outcome owner, diagnostician, and interventionist",
+          emoji: "🦾",
+        },
       },
     });
   });

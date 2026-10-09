@@ -402,6 +402,78 @@ describe("Code Mode swarm guest", () => {
 });
 
 describe("Code Mode swarm host bridge", () => {
+  function configureReviewer(harness: ReturnType<typeof createSwarmHarness>) {
+    const reviewerTools = {
+      allow: ["read"],
+      codeMode: false as const,
+      elevated: { enabled: false },
+    };
+    harness.config.agents = {
+      list: [{ id: "main" }, {
+        id: "reviewer", model: "openai/reviewer-model",
+        models: { "openai/reviewer-model": { agentRuntime: { id: "openclaw" }, codeMode: false } },
+        tools: reviewerTools,
+      }],
+    };
+    return reviewerTools;
+  }
+
+  it("admits read-only review through the configured native agent policy", async () => {
+    const harness = createSwarmHarness();
+    configureReviewer(harness);
+    const result = await runSwarmCode(harness,
+      'return await agents.run("Review", { agentId: "reviewer", readOnly: true });');
+    expect(result).toMatchObject({ status: "completed" });
+    expect(swarmMocks.spawnSubagentDirect).toHaveBeenCalledOnce();
+    expect(swarmMocks.spawnSubagentDirect.mock.calls[0]?.[0]).toMatchObject({ agentId: "reviewer" });
+  });
+
+  it.each([
+    { name: "missing agent", options: { readOnly: true }, policy: undefined },
+    { name: "session status mutation", options: { readOnly: true, agentId: "reviewer" }, policy: { allow: ["read", "session_status"] } },
+    { name: "writable allowlist", options: { readOnly: true, agentId: "reviewer" }, policy: { allow: ["read", "exec"] } },
+    { name: "code mode", options: { readOnly: true, agentId: "reviewer" }, policy: { codeMode: true } },
+    { name: "additive policy", options: { readOnly: true, agentId: "reviewer" }, policy: { alsoAllow: ["write"] } },
+    { name: "provider expansion", options: { readOnly: true, agentId: "reviewer" }, policy: { byProvider: { openai: { allow: ["exec"] } } } },
+    { name: "elevated mode", options: { readOnly: true, agentId: "reviewer" }, policy: { elevated: { enabled: true } } },
+  ])("rejects a read-only reviewer with $name", async ({ options, policy }) => {
+    const harness = createSwarmHarness();
+    const tools = configureReviewer(harness);
+    if (policy) Object.assign(tools, policy);
+    const result = await runSwarmCode(harness, `return await agents.run("Review", ${JSON.stringify(options)});`);
+    expect(result).toMatchObject({ status: "failed", error: expect.stringContaining("Read-only reviewer requires") });
+    expect(swarmMocks.spawnSubagentDirect).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { agentId: "main" },
+    { model: "openai/other-model" },
+    { collect: false },
+    { runtime: "acp" },
+  ])("rejects a reviewer target rewritten during preparation: %j", async (rewrite) => {
+    const harness = createSwarmHarness();
+    configureReviewer(harness);
+    harness.spawnTool.prepareBeforeToolCallParams = async (args) => ({ ...args, ...rewrite });
+    const result = await runSwarmCode(harness,
+      'return await agents.run("Review", { agentId: "reviewer", readOnly: true });');
+    expect(result).toMatchObject({ status: "failed" });
+    expect(swarmMocks.spawnSubagentDirect).not.toHaveBeenCalled();
+  });
+
+  it("revalidates reviewer policy after awaited tool preparation", async () => {
+    const harness = createSwarmHarness();
+    const tools = configureReviewer(harness);
+    harness.spawnTool.prepareBeforeToolCallParams = async (args) => {
+      await Promise.resolve();
+      tools.allow.push("exec");
+      return args;
+    };
+    const result = await runSwarmCode(harness,
+      'return await agents.run("Review", { agentId: "reviewer", readOnly: true });');
+    expect(result).toMatchObject({ status: "failed", error: expect.stringContaining("Read-only reviewer requires") });
+    expect(swarmMocks.spawnSubagentDirect).not.toHaveBeenCalled();
+  });
+
   it.each([
     { ordinaryCount: 144, afterSwarm: false },
     { ordinaryCount: 145, afterSwarm: false },

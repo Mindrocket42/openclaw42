@@ -9,19 +9,15 @@ substrate instead of creating a second swarm runtime.
 
 ## Control loop
 
-```text
-REQUEST
-  -> INTENT CONTRACT
-  -> DECOMPOSE (only independent lanes)
-  -> EXECUTE + LOCAL VALIDATION
-  -> HURDLE? --yes--> CLASSIFY -> REPAIR / CORRECTIVE LANE -> EXECUTE
-  -> INTENT-SATISFACTION GATE
-       | no, repairable -> smallest corrective lane
-       | no, irreducible -> human decision/material input
-       | yes
-  -> PRESENT RESULT + RECEIPTS
-  -> RETAIN METHOD when recurrence is likely
-```
+1. Preserve the request and form an intent contract with outcome, constraints,
+   acceptance evidence, and authority boundary.
+2. Decompose independent lanes, execute, and validate their actual boundaries.
+3. Classify hurdles and repair locally or through one bounded corrective lane.
+4. Compare the observed result to the original intent. Repair a material gap;
+   invoke the human only for irreducible authority or unavailable material input.
+5. Present the satisfied result with receipts. Retain a successful recurring
+   procedure and the diagnostic record of failed methods.
+
 
 ## Why this is not ordinary validation
 
@@ -79,3 +75,35 @@ login-shell profiles, or runs dependency lifecycle scripts implicitly.
 Dependency scripts require explicit `OPENCLAW_TRUST_DEPENDENCY_SCRIPTS=1`.
 Runtime execution policy, authority revalidation, sandbox rules, credential
 handling, and OpenGrep remain the existing security owners.
+
+## Executable intent loop
+
+With Code Mode and swarm enabled, `agents.juggle` runs this loop through existing
+spawn/wait owners. It accepts `request`, `acceptance`, one to four disjoint
+`lanes` (id, owner, prompt, method, resources, optional agentId), `tokenBudget`,
+`maxCorrections`, required `reviewerAgentId`, and an authorized `retain` callback.
+The reviewer requires an explicit native model and a host-enforced `read`-only
+tool policy, with Code Mode and elevated execution disabled. Default budget is
+50,000 reported input/output tokens, excluding cached tokens and provider charges.
+At most two correction rounds and two diagnostic review retries run, bounded to
+17 collectors per invocation. Missing usage stops admission. The budget controls
+subsequent admission; it cannot cap an in-flight provider call.
+
+The result is `satisfied`, `blocked`, or `needs_human`, with evidence, review,
+token accounting, and launches. Satisfaction requires the retained procedure's
+verified artifact receipt. `retain(bytes, procedure)` writes the supplied compact
+canonical JSON with an authorized file tool and returns its path. The controller
+independently reads that path through the native file tool and compares its exact
+content; a callback assertion proves nothing. No helper result
+creates human authorization or weakens sandbox and tool controls.
+
+## Workspace activation
+
+New native workspaces load these packaged templates. Role creation uses its
+role-specific AGENTS, SOUL, and IDENTITY. Native subagents inherit only AGENTS;
+therefore operating authority and delegation rules live in every role AGENTS.
+Existing workspaces remain untouched until explicit migration. Use the offline
+migration procedure in [Role propagation](/reference/ironhead/ROLE_PROPAGATION).
+Restart the serving runtime after replacing packaged templates so process-stable
+template caches use the new package. Verify an actual child run receives its
+workspace AGENTS; source inspection is not a live machine activation receipt.

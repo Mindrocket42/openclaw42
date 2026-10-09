@@ -421,12 +421,46 @@ interface AgentRunOptions {
   agentId?: string;
   schema?: AgentJsonSchema;
   phase?: string;
+  /** Host requires a restricted read-only agent; cannot confer authority. */
+  readOnly?: boolean;
+}
+
+interface JuggleLane {
+  id: string;
+  owner: string;
+  prompt: string;
+  method: string;
+  /** Canonical slash-separated relative resource names, without dot/traversal segments. */
+  resources: string[];
+  agentId?: string;
+}
+interface JuggleOptions {
+  request: string;
+  acceptance: string;
+  reviewerAgentId: string;
+  lanes: JuggleLane[];
+  /** Admission budget for reported input/output tokens, excluding cache read/write usage and provider charges; cannot preempt an admitted call. */
+  tokenBudget?: number;
+  maxCorrections?: number;
+  /** Write exact bytes through existing tools, return path. Native read independently verifies. Must be idempotent. */
+  retain(bytes: string, procedure: Readonly<Record<string, unknown>>): Promise<string>;
+}
+interface JuggleResult {
+  status: "satisfied" | "blocked" | "needs_human";
+  reason?: string;
+  tokens: number;
+  launches: number;
+  evidence: unknown[];
+  review?: unknown;
+  procedure?: { path: string; verified: true; receipt: string; bytes: number };
 }
 
 interface AgentsApi {
   /** Reserve agents.run fan-out for batches; a single child uses sessions_spawn directly (announcing run). Child failures have name "SwarmAgentError", runId, status, and message; SwarmAgentError is not a global constructor. */
   run(prompt: string, options?: AgentRunOptions & { schema?: undefined }): Promise<string>;
   run<T>(prompt: string, options: AgentRunOptions & { schema: AgentJsonSchema }): Promise<T>;
+  /** Bounded outcome review and correction on existing collectors. At most 4 disjoint lanes, 2 corrections; usage is an admission budget, not provider preemption. */
+  juggle(options: JuggleOptions): Promise<JuggleResult>;
 }
 
 /** Spawn collector agents concurrently; requests queue when bridge slots are full. */

@@ -13,6 +13,8 @@ The default Docker sandbox backend uses only the `docker` CLI. Set the backend t
 
 Hosting multiple users? See [Multi-tenant hosting](/gateway/multi-tenant-hosting) for the one-cell-per-tenant model.
 
+Host ports publish on `127.0.0.1` by default. The Gateway still listens on the container network so the CLI and health checks work. For remote access, set `OPENCLAW_PUBLISH_HOST` to the host's tailnet or LAN IP before running setup. Set it to `0.0.0.0` only when exposure on every IPv4 interface is intentional. This affects the Gateway, bridge, and Teams webhook ports; remote webhooks need an explicitly configured reachable address or reverse proxy.
+
 ## Prerequisites
 
 - Docker Desktop (or Docker Engine) + Docker Compose v2

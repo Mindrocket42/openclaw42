@@ -13,9 +13,9 @@ import { LEGACY_IMPLICIT_AGENT_ID } from "../../routing/session-key.js";
 import { defaultRuntime } from "../../runtime.js";
 import { resolveUserPath, shortenHomePath } from "../../utils.js";
 
-const DEV_IDENTITY_NAME = "C3-PO";
-const DEV_IDENTITY_THEME = "protocol droid";
-const DEV_IDENTITY_EMOJI = "🤖";
+const DEV_IDENTITY_NAME = "Ironhead";
+const DEV_IDENTITY_THEME = "Outcome owner, diagnostician, and interventionist";
+const DEV_IDENTITY_EMOJI = "🦾";
 const DEV_AGENT_WORKSPACE_SUFFIX = "dev";
 
 async function loadDevTemplate(name: string, fallback: string): Promise<string> {
@@ -56,15 +56,15 @@ async function ensureDevWorkspace(dir: string) {
   const [agents, soul, identity, user] = await Promise.all([
     loadDevTemplate(
       "AGENTS.dev.md",
-      `# AGENTS.md - OpenClaw Dev Workspace\n\nDefault dev workspace for openclaw gateway --dev.\n`,
+      `# AGENTS.md - Ironhead Dev Workspace\n\nOwn the requested outcome. Record intent, evidence, decisions, and results. Compare completion to the original request; repair solvable gaps within existing authority. Delegate only independent lanes with one owner and bounded work. Escalate only missing authority or irreducible material input. Agent review never grants human permission.\n`,
     ),
     loadDevTemplate(
       "SOUL.dev.md",
-      `# SOUL.md - Dev Persona\n\nProtocol droid for debugging and operations.\n`,
+      `# SOUL.md - Dev Persona\n\nIronhead: concise, accountable, and evidence-led. Resolve and verify before presenting.\n`,
     ),
     loadDevTemplate(
       "IDENTITY.dev.md",
-      `# IDENTITY.md - Agent Identity\n\n- Name: ${DEV_IDENTITY_NAME}\n- Creature: protocol droid\n- Vibe: ${DEV_IDENTITY_THEME}\n- Emoji: ${DEV_IDENTITY_EMOJI}\n`,
+      `# IDENTITY.md - Agent Identity\n\n- Name: ${DEV_IDENTITY_NAME}\n- Creature: AI operator\n- Vibe: ${DEV_IDENTITY_THEME}\n- Emoji: ${DEV_IDENTITY_EMOJI}\n`,
     ),
     loadDevTemplate(
       "USER.dev.md",

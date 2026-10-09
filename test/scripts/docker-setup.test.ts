@@ -117,6 +117,8 @@ describe("scripts/docker/setup.sh", () => {
     });
     expect(result.status).toBe(0);
     const envFile = await readFile(join(activeSandbox.rootDir, ".env"), "utf8");
+    expect(envFile).toContain("OPENCLAW_PUBLISH_HOST=127.0.0.1");
+    expect((await stat(join(activeSandbox.rootDir, ".env"))).mode & 0o777).toBe(0o600);
     expect(envFile).toContain("OPENCLAW_IMAGE_APT_PACKAGES=curl wget");
     expect(envFile).toContain("OPENCLAW_DOCKER_BUILD_NODE_OPTIONS=--max-old-space-size=8192");
     expect(envFile).toContain("OPENCLAW_DOCKER_BUILD_TSDOWN_MAX_OLD_SPACE_MB=");
@@ -153,7 +155,7 @@ describe("scripts/docker/setup.sh", () => {
     );
     expect(result.stdout).toContain("Gateway token: stored in Docker environment/config");
     expect(result.stdout).toContain("Gateway running with host port mapping.");
-    expect(result.stdout).toContain("Access from tailnet devices via the host's tailnet IP.");
+    expect(result.stdout).toContain("Published host address: 127.0.0.1 (default: loopback only).");
     expect(result.stdout).toContain("Commands:");
     expect(result.stdout).toContain("logs -f openclaw-gateway");
     expect(result.stdout).toContain(
@@ -228,16 +230,18 @@ describe("scripts/docker/setup.sh", () => {
     expect(extraCompose).toContain(`"${extraMountSource}:/mnt/extra data:ro"`);
   });
 
-  it("persists explicit Docker Bonjour opt-in overrides", async () => {
+  it("persists explicit Docker networking opt-in overrides", async () => {
     const activeSandbox = requireSandbox(sandbox);
 
     const result = runDockerSetup(activeSandbox, {
       OPENCLAW_DISABLE_BONJOUR: "0",
+      OPENCLAW_PUBLISH_HOST: "192.0.2.5",
     });
 
     expect(result.status).toBe(0);
     const envFile = await readFile(join(activeSandbox.rootDir, ".env"), "utf8");
     expect(envFile).toContain("OPENCLAW_DISABLE_BONJOUR=0");
+    expect(envFile).toContain("OPENCLAW_PUBLISH_HOST=192.0.2.5");
   });
 
   it("persists and forwards signal-specific OTLP protocol overrides", async () => {
@@ -1029,7 +1033,11 @@ describe("scripts/docker/setup.sh", () => {
     const gateway = services["openclaw-gateway"];
     const listenerPort = gateway.command[gateway.command.indexOf("--port") + 1];
     expect(listenerPort).toBe("18789");
-    expect(gateway.ports).toContain(`\${OPENCLAW_GATEWAY_PORT:-18789}:${listenerPort}`);
+    expect(gateway.ports).toEqual([
+      `\${OPENCLAW_PUBLISH_HOST:-127.0.0.1}:\${OPENCLAW_GATEWAY_PORT:-18789}:${listenerPort}`,
+      "${OPENCLAW_PUBLISH_HOST:-127.0.0.1}:${OPENCLAW_BRIDGE_PORT:-18790}:18790",
+      "${OPENCLAW_PUBLISH_HOST:-127.0.0.1}:${OPENCLAW_MSTEAMS_PORT:-3978}:3978",
+    ]);
     for (const name of ["openclaw-gateway", "openclaw-cli"] as const) {
       expect(services[name].environment, name).toMatchObject({
         OPENCLAW_HOME: "/home/node",

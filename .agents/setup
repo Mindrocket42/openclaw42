@@ -53,8 +53,8 @@ install_dependencies() {
   CI=true COREPACK_ENABLE_DOWNLOAD_PROMPT=0 corepack pnpm install \
     --frozen-lockfile \
     --prefer-offline \
-    --config.engine-strict=false \
-    --config.side-effects-cache=true \
+    --config.engine-strict=true \
+    --config.side-effects-cache=false \
     "${script_mode[@]}"
 }
 
